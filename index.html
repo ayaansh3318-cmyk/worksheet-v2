@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worksheet Marketplace</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body class="bg-gray-50 min-height-screen p-4 md:p-8">
+
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        
+        <!-- Create Listing Form -->
+        <form id="listingForm" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Edition</label>
+                    <select id="edition" class="w-full p-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Normal">Normal</option>
+                        <option value="Premium">Premium</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+                    <input type="number" id="price" value="50" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Hosted checkout URL (optional)</label>
+                <input type="url" id="checkoutUrl" placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer">
+                Create listing
+            </button>
+            
+            <p class="text-xs text-gray-500 mt-2">
+                Demo listing created in this browser. It is not published for other visitors.
+            </p>
+        </form>
+
+        <!-- Dynamic Output Section -->
+        <div class="mt-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Listings created in this browser</h2>
+            <div id="listingsContainer" class="space-y-3">
+                <!-- JavaScript inserts dynamic cards here -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript to manage state and downloads -->
+    <script>
+        const form = document.getElementById('listingForm');
+        const container = document.getElementById('listingsContainer');
+
+        // Load existing listings from localStorage on page refresh
+        let listings = JSON.parse(localStorage.getItem('myListings')) || [];
+
+        function saveAndRender() {
+            localStorage.setItem('myListings', JSON.stringify(listings));
+            container.innerHTML = '';
+
+            if (listings.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-400 italic">No listings created yet.</p>';
+                return;
+            }
+
+            listings.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "flex items-center justify-between p-4 border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-all";
+                
+                // Fallback demo file if no checkout URL is provided
+                const downloadPath = item.url ? item.url : '#';
+
+                card.innerHTML = `
+                    <div>
+                        <h3 class="font-semibold text-gray-800">${item.edition} WS class 3</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Class 3 • Maths • ${item.edition} • ₹${item.price}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <!-- Download action linked directly to your file source -->
+                        <a href="${downloadPath}" download="worksheet-class3.pdf" class="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors flex items-center">
+                            Download
+                        </a>
+                        <!-- Remove button -->
+                        <button onclick="removeListing(${index})" class="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                            Remove
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Handle form submissions
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const newListing = {
+                edition: document.getElementById('edition').value,
+                price: document.getElementById('price').value,
+                url: document.getElementById('checkoutUrl').value
+            };
+
+            listings.push(newListing);
+            saveAndRender();
+            form.reset();
+            document.getElementById('price').value = "50"; // Reset defaults
+        });
+
+        // Handle removing item
+        window.removeListing = function(index) {
+            listings.splice(index, 1);
+            saveAndRender();
+        }
+
+        // Initial render execution
+        saveAndRender();
+    </script>
+</body>
+</html>
